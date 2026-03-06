@@ -107,7 +107,15 @@
           <section class="panel">
             <div class="panel-title">Service eintragen</div>
             <div class="form-grid">
-              <select id="serviceTypeSelect" class="field"></select>
+             <select id="serviceTypeSelect" class="field">
+              <option value="">Freie Wartung</option>
+            </select>
+           <input 
+              id="serviceCustomName" 
+              class="field" 
+              type="text" 
+              placeholder="Service Name (z.B. Reifen gewechselt)" 
+          />
               <input id="serviceDateInput" class="field" type="date" />
               <input id="serviceValueInput" class="field" type="number" step="0.1" placeholder="Stand" />
               <textarea id="serviceNoteInput" class="field notes-small" placeholder="Notiz, Öltyp, Teile, Auffälligkeiten ..."></textarea>
