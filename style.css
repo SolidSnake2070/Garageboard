@@ -590,3 +590,8 @@ button, input, select, textarea {
     min-width: 0;
   }
 }
+.field-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 6px;
+}
