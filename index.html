@@ -206,6 +206,15 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+<script src="script.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch((error) => {
+        console.error("Service Worker konnte nicht registriert werden:", error);
+      });
+    });
+  }
+</script>
 </body>
 </html>
