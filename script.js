@@ -584,7 +584,7 @@ function logService(isPlanned) {
 
  let serviceName = document.getElementById("serviceCustomName").value.trim() || "Freie Wartung";
 
-  if (isPlanned && selectedKey) {
+  if (isPlanned && selectedKey !== "") {
     const template = bike.serviceTemplates.find(t => t.key === selectedKey);
     if (!template) return;
     template.lastDoneAt = value;
