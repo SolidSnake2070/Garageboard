@@ -29,8 +29,8 @@
       <div class="sidebar-block">
         <div class="sidebar-label">Aktionen</div>
         <div class="sidebar-actions">
-          <button id="addBikeBtn" class="ghost-btn">+ Fahrzeug hinzufügen</button>
-          <button id="exportBtn" class="ghost-btn">Export JSON</button>
+          <button id="addBikeBtn" class="ghost-btn" type="button">+ Fahrzeug hinzufügen</button>
+          <button id="exportBtn" class="ghost-btn" type="button">Export JSON</button>
           <label class="ghost-btn import-btn">
             Import JSON
             <input id="importInput" type="file" accept=".json,application/json" hidden />
@@ -74,9 +74,9 @@
             <div id="detailMeta" class="detail-meta"></div>
           </div>
           <div class="detail-head-actions">
-            <button id="researchBtn" class="ghost-btn">Research</button>
-            <button id="deleteBikeBtn" class="ghost-btn danger-btn">Fahrzeug löschen</button>
-            <button id="closeDetailBtn" class="ghost-btn">Schließen</button>
+            <button id="researchBtn" class="ghost-btn" type="button">Research</button>
+            <button id="deleteBikeBtn" class="ghost-btn danger-btn" type="button">Fahrzeug löschen</button>
+            <button id="closeDetailBtn" class="ghost-btn" type="button">Schließen</button>
           </div>
         </div>
 
@@ -85,7 +85,7 @@
             <div class="panel-title">Aktueller Stand</div>
             <div class="current-row">
               <input id="currentValueInput" class="current-input" type="number" step="0.1" />
-              <button id="saveCurrentBtn" class="primary-btn">Speichern</button>
+              <button id="saveCurrentBtn" class="primary-btn" type="button">Speichern</button>
             </div>
             <div id="quickButtons" class="quick-buttons"></div>
           </section>
@@ -94,7 +94,7 @@
             <div class="panel-title">Notizen</div>
             <textarea id="notesInput" class="notes-input" placeholder="Eigene Hinweise, Setup, Auffälligkeiten ..."></textarea>
             <div class="panel-footer">
-              <button id="saveNotesBtn" class="primary-btn">Notizen speichern</button>
+              <button id="saveNotesBtn" class="primary-btn" type="button">Notizen speichern</button>
             </div>
           </section>
 
@@ -127,8 +127,8 @@
               ></textarea>
             </div>
             <div class="service-actions">
-              <button id="logPlannedBtn" class="primary-btn">Geplante Wartung speichern</button>
-              <button id="openCustomServiceBtn" class="ghost-btn">Eigenen Service eintragen</button>
+              <button id="logPlannedBtn" class="primary-btn" type="button">Geplante Wartung speichern</button>
+              <button id="openCustomServiceBtn" class="ghost-btn" type="button">Eigenen Service eintragen</button>
             </div>
           </section>
 
@@ -143,7 +143,7 @@
               <textarea id="refImportantNotes" class="field notes-small" placeholder="Wichtige Hinweise, Schwachstellen, Besonderheiten ..."></textarea>
             </div>
             <div class="panel-footer">
-              <button id="saveReferenceBtn" class="primary-btn">Referenzdaten speichern</button>
+              <button id="saveReferenceBtn" class="primary-btn" type="button">Referenzdaten speichern</button>
             </div>
           </section>
 
@@ -160,7 +160,7 @@
     <div class="modal-card">
       <div class="modal-head">
         <h3>Neues Fahrzeug</h3>
-        <button id="closeAddBikeModalBtn" class="ghost-btn">Schließen</button>
+        <button id="closeAddBikeModalBtn" class="ghost-btn" type="button">Schließen</button>
       </div>
 
       <div class="form-grid">
@@ -189,7 +189,7 @@
       <div id="newBikeFeedback" class="form-feedback hidden"></div>
 
       <div class="panel-footer">
-        <button id="saveNewBikeBtn" class="primary-btn">Fahrzeug anlegen</button>
+        <button id="saveNewBikeBtn" class="primary-btn" type="button">Fahrzeug anlegen</button>
       </div>
     </div>
   </div>
@@ -197,8 +197,8 @@
   <div id="researchModal" class="modal hidden">
     <div class="modal-card">
       <div class="modal-head">
-        <h3 id="researchTitle">Websuche</h3>
-        <button id="closeResearchModalBtn" class="ghost-btn">Schließen</button>
+        <h3 id="researchTitle">Research</h3>
+        <button id="closeResearchModalBtn" class="ghost-btn" type="button">Schließen</button>
       </div>
 
       <div class="form-grid">
@@ -206,16 +206,16 @@
       </div>
 
       <div class="research-grid">
-        <button class="ghost-btn research-preset" data-mode="manual">Handbuch</button>
-        <button class="ghost-btn research-preset" data-mode="oilamount">Ölmenge</button>
-        <button class="ghost-btn research-preset" data-mode="oiltype">Öltyp</button>
-        <button class="ghost-btn research-preset" data-mode="intervals">Wartungsintervalle</button>
-        <button class="ghost-btn research-preset" data-mode="parts">Teilenummern / Filter</button>
-        <button class="ghost-btn research-preset" data-mode="problems">Schwachstellen</button>
+        <button class="ghost-btn research-preset" data-mode="manual" type="button">Handbuch</button>
+        <button class="ghost-btn research-preset" data-mode="oilamount" type="button">Ölmenge</button>
+        <button class="ghost-btn research-preset" data-mode="oiltype" type="button">Öltyp</button>
+        <button class="ghost-btn research-preset" data-mode="intervals" type="button">Wartungsintervalle</button>
+        <button class="ghost-btn research-preset" data-mode="parts" type="button">Teilenummern / Filter</button>
+        <button class="ghost-btn research-preset" data-mode="problems" type="button">Schwachstellen</button>
       </div>
 
       <div class="panel-footer">
-        <button id="runCustomResearchBtn" class="primary-btn">Freie Suche starten</button>
+        <button id="runCustomResearchBtn" class="primary-btn" type="button">Freie Suche starten</button>
       </div>
     </div>
   </div>
@@ -224,29 +224,20 @@
     <div class="modal-card">
       <div class="modal-head">
         <h3>Eigenen Service eintragen</h3>
-        <button id="closeCustomServiceModalBtn" class="ghost-btn">Schließen</button>
+        <button id="closeCustomServiceModalBtn" class="ghost-btn" type="button">Schließen</button>
       </div>
 
-<div class="form-grid">
-
-  <label class="field-label">Name der Wartung</label>
-  <input id="editIntervalName" class="field" type="text" placeholder="z.B. Ölwechsel" />
-
-  <label class="field-label" id="labelInterval">Intervall</label>
-  <input id="editIntervalValue" class="field" type="number" step="0.1" />
-
-  <label class="field-label" id="labelWarn">Warnung vorher</label>
-  <input id="editWarnBefore" class="field" type="number" step="0.1" />
-
-  <label class="field-label" id="labelLastDone">Zuletzt gemacht bei</label>
-  <input id="editLastDoneAt" class="field" type="number" step="0.1" />
-
-</div>
+      <div class="form-grid">
+        <input id="customServiceName" class="field" type="text" placeholder="Was wurde gemacht? z. B. Reifen gewechselt" />
+        <input id="customServiceDate" class="field" type="date" />
+        <input id="customServiceValue" class="field" type="number" step="0.1" placeholder="Stand" />
+        <textarea id="customServiceNote" class="field notes-small" placeholder="Notiz, Teile, Kosten, Auffälligkeiten ..."></textarea>
+      </div>
 
       <div id="customServiceFeedback" class="form-feedback hidden"></div>
 
       <div class="panel-footer">
-        <button id="saveCustomServiceBtn" class="primary-btn">Eigenen Service speichern</button>
+        <button id="saveCustomServiceBtn" class="primary-btn" type="button">Eigenen Service speichern</button>
       </div>
     </div>
   </div>
@@ -255,28 +246,28 @@
     <div class="modal-card">
       <div class="modal-head">
         <h3>Wartung bearbeiten</h3>
-        <button id="closeEditIntervalModalBtn" class="ghost-btn">Schließen</button>
+        <button id="closeEditIntervalModalBtn" class="ghost-btn" type="button">Schließen</button>
       </div>
 
-<div class="form-grid">
-  <label class="field-label" for="editIntervalName">Name der Wartung</label>
-  <input id="editIntervalName" class="field" type="text" placeholder="Name" />
+      <div class="form-grid">
+        <label class="field-label" for="editIntervalName">Name der Wartung</label>
+        <input id="editIntervalName" class="field" type="text" placeholder="z. B. Ölwechsel" />
 
-  <label class="field-label" for="editIntervalValue">Intervall</label>
-  <input id="editIntervalValue" class="field" type="number" step="0.1" placeholder="Intervall" />
+        <label class="field-label" id="labelInterval" for="editIntervalValue">Intervall</label>
+        <input id="editIntervalValue" class="field" type="number" step="0.1" />
 
-  <label class="field-label" for="editWarnBefore">Warnung vorher</label>
-  <input id="editWarnBefore" class="field" type="number" step="0.1" placeholder="Warnung vorher" />
+        <label class="field-label" id="labelWarn" for="editWarnBefore">Warnung vorher</label>
+        <input id="editWarnBefore" class="field" type="number" step="0.1" />
 
-  <label class="field-label" for="editLastDoneAt">Zuletzt gemacht bei</label>
-  <input id="editLastDoneAt" class="field" type="number" step="0.1" placeholder="Zuletzt gemacht bei" />
-</div>
+        <label class="field-label" id="labelLastDone" for="editLastDoneAt">Zuletzt gemacht bei</label>
+        <input id="editLastDoneAt" class="field" type="number" step="0.1" />
+      </div>
 
       <div id="editIntervalFeedback" class="form-feedback hidden"></div>
 
       <div class="panel-footer modal-action-row">
-        <button id="saveEditIntervalBtn" class="primary-btn">Speichern</button>
-        <button id="deleteIntervalBtn" class="ghost-btn danger-btn">Intervall löschen</button>
+        <button id="saveEditIntervalBtn" class="primary-btn" type="button">Speichern</button>
+        <button id="deleteIntervalBtn" class="ghost-btn danger-btn" type="button">Intervall löschen</button>
       </div>
     </div>
   </div>
