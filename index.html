@@ -7,44 +7,112 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">SERVICE MONITOR</p>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-kicker">SERVICE MONITOR</div>
         <h1>GARAGE PANEL</h1>
+        <div class="brand-sub">Motorrad-Wartung und Historie</div>
       </div>
-      <div class="syncbox">
-        <span class="sync-label">Speicher</span>
-        <span class="sync-value">Lokal im Browser</span>
+
+      <div class="sidebar-block">
+        <div class="sidebar-label">Speicher</div>
+        <div class="sidebar-value">Lokal im Browser</div>
       </div>
-    </header>
 
-    <main class="grid" id="bikeGrid"></main>
-  </div>
-
-  <template id="bike-card-template">
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <p class="card-type"></p>
-          <h2 class="card-title"></h2>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Aktionen</div>
+        <div class="sidebar-actions">
+          <button id="exportBtn" class="ghost-btn">Export JSON</button>
+          <label class="ghost-btn import-btn">
+            Import JSON
+            <input id="importInput" type="file" accept=".json,application/json" hidden />
+          </label>
+          <button id="resetBtn" class="ghost-btn danger">Reset Demo-Daten</button>
         </div>
-        <div class="status-badge">OK</div>
       </div>
 
-      <div class="main-value-row">
-        <label class="main-label"></label>
-        <input class="main-input" type="number" step="0.1" />
+      <div class="sidebar-block">
+        <div class="sidebar-label">Legende</div>
+        <div class="legend">
+          <div><span class="dot ok"></span> OK</div>
+          <div><span class="dot warn"></span> BALD</div>
+          <div><span class="dot due"></span> FÄLLIG</div>
+        </div>
       </div>
+    </aside>
 
-      <div class="service-list"></div>
+    <main class="main">
+      <section class="topbar">
+        <div>
+          <div class="eyebrow">ÜBERSICHT</div>
+          <h2>Fahrzeuge</h2>
+        </div>
+        <div class="topbar-right">
+          <input id="searchInput" class="search-input" type="text" placeholder="Fahrzeug suchen..." />
+        </div>
+      </section>
 
-      <div class="card-footer">
-        <button class="save-btn">Speichern</button>
-        <span class="save-info">nicht gespeichert</span>
-      </div>
-    </section>
-  </template>
+      <section id="dashboardGrid" class="dashboard-grid"></section>
+
+      <section id="detailPanel" class="detail-panel hidden">
+        <div class="detail-head">
+          <div>
+            <div id="detailType" class="detail-type"></div>
+            <h3 id="detailTitle"></h3>
+            <div id="detailMeta" class="detail-meta"></div>
+          </div>
+          <div class="detail-head-actions">
+            <button id="researchBtn" class="ghost-btn">Research</button>
+            <button id="closeDetailBtn" class="ghost-btn">Schließen</button>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <section class="panel">
+            <div class="panel-title">Aktueller Stand</div>
+            <div class="current-row">
+              <input id="currentValueInput" class="current-input" type="number" step="0.1" />
+              <button id="saveCurrentBtn" class="primary-btn">Speichern</button>
+            </div>
+            <div id="quickButtons" class="quick-buttons"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Notizen</div>
+            <textarea id="notesInput" class="notes-input" placeholder="Eigene Hinweise, Setup, Auffälligkeiten ..."></textarea>
+            <div class="panel-footer">
+              <button id="saveNotesBtn" class="primary-btn">Notizen speichern</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Wartungsintervalle</div>
+            <div id="intervalList" class="interval-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Service eintragen</div>
+            <div class="form-grid">
+              <select id="serviceTypeSelect" class="field"></select>
+              <input id="serviceDateInput" class="field" type="date" />
+              <input id="serviceValueInput" class="field" type="number" step="0.1" placeholder="Stand" />
+              <textarea id="serviceNoteInput" class="field notes-small" placeholder="Notiz, Öltyp, Teile, Auffälligkeiten ..."></textarea>
+            </div>
+            <div class="service-actions">
+              <button id="logPlannedBtn" class="primary-btn">Geplante Wartung speichern</button>
+              <button id="logCustomBtn" class="ghost-btn">Freie Wartung speichern</button>
+            </div>
+          </section>
+
+          <section class="panel panel-wide">
+            <div class="panel-title">Historie</div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="script.js"></script>
 </body>
