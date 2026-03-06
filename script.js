@@ -1,9 +1,12 @@
-const STORAGE_KEY = "garage-panel-top-end-v1";
+const STORAGE_KEY = "garage-panel-top-end-v2";
+const CURRENT_DATA_VERSION = 2;
 
 const defaultState = {
+  version: CURRENT_DATA_VERSION,
   bikes: [
     {
       id: crypto.randomUUID(),
+      category: "motocross",
       name: "KX250F",
       brand: "Kawasaki",
       year: 2009,
@@ -41,6 +44,7 @@ const defaultState = {
     },
     {
       id: crypto.randomUUID(),
+      category: "motocross",
       name: "KX85",
       brand: "Kawasaki",
       year: 2017,
@@ -66,6 +70,7 @@ const defaultState = {
     },
     {
       id: crypto.randomUUID(),
+      category: "motorcycle",
       name: "KTM 690 SMC",
       brand: "KTM",
       year: 2008,
@@ -99,22 +104,136 @@ function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+function todayString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getCategoryLabel(category) {
+  const map = {
+    motocross: "Motocross",
+    motorcycle: "Motorrad",
+    quad: "Quad",
+    car: "Auto",
+    custom: "Freies Fahrzeug"
+  };
+  return map[category] || "Fahrzeug";
+}
+
+function getCategoryDefaults(category) {
+  const defaults = {
+    motocross: {
+      type: "MOTOCROSS / HOURS",
+      unit: "h",
+      quickAdds: [0.5, 1, 2, 5],
+      serviceTemplates: [
+        { key: "oil", name: "Ölwechsel", interval: 5, lastDoneAt: 0, warnBefore: 2 },
+        { key: "airfilter", name: "Luftfilter", interval: 1, lastDoneAt: 0, warnBefore: 0.5 },
+        { key: "valves", name: "Ventilspiel", interval: 20, lastDoneAt: 0, warnBefore: 3 }
+      ]
+    },
+    motorcycle: {
+      type: "STREET / KILOMETERS",
+      unit: "km",
+      quickAdds: [100, 250, 500, 1000],
+      serviceTemplates: [
+        { key: "oil", name: "Ölwechsel", interval: 5000, lastDoneAt: 0, warnBefore: 1000 },
+        { key: "brakefluid", name: "Bremsflüssigkeit", interval: 12000, lastDoneAt: 0, warnBefore: 2000 },
+        { key: "chain", name: "Kettensatz prüfen", interval: 1000, lastDoneAt: 0, warnBefore: 300 }
+      ]
+    },
+    quad: {
+      type: "QUAD / KILOMETERS",
+      unit: "km",
+      quickAdds: [50, 100, 250, 500],
+      serviceTemplates: [
+        { key: "oil", name: "Ölwechsel", interval: 3000, lastDoneAt: 0, warnBefore: 500 },
+        { key: "airfilter", name: "Luftfilter", interval: 1000, lastDoneAt: 0, warnBefore: 200 },
+        { key: "drive", name: "Antrieb prüfen", interval: 1500, lastDoneAt: 0, warnBefore: 300 }
+      ]
+    },
+    car: {
+      type: "AUTO / KILOMETERS",
+      unit: "km",
+      quickAdds: [100, 500, 1000, 5000],
+      serviceTemplates: [
+        { key: "oil", name: "Ölwechsel", interval: 15000, lastDoneAt: 0, warnBefore: 2000 },
+        { key: "inspection", name: "Inspektion", interval: 30000, lastDoneAt: 0, warnBefore: 3000 },
+        { key: "brakefluid", name: "Bremsflüssigkeit", interval: 30000, lastDoneAt: 0, warnBefore: 3000 }
+      ]
+    },
+    custom: {
+      type: "CUSTOM / KILOMETERS",
+      unit: "km",
+      quickAdds: [100, 500, 1000],
+      serviceTemplates: []
+    }
+  };
+
+  return deepClone(defaults[category] || defaults.custom);
+}
+
+function migrateState(loadedState) {
+  const migrated = deepClone(loadedState);
+
+  if (!migrated.version) {
+    migrated.version = 1;
+  }
+
+  if (!Array.isArray(migrated.bikes)) {
+    migrated.bikes = [];
+  }
+
+  if (migrated.version < 2) {
+    migrated.bikes.forEach((bike) => {
+      if (!bike.category) {
+        bike.category = bike.unit === "h" ? "motocross" : "motorcycle";
+      }
+
+      if (!bike.reference) {
+        bike.reference = {
+          engineType: "",
+          displacement: "",
+          oilType: "",
+          oilAmount: "",
+          filterPart: "",
+          importantNotes: ""
+        };
+      }
+
+      if (!bike.quickAdds || !Array.isArray(bike.quickAdds)) {
+        bike.quickAdds = bike.unit === "h" ? [0.5, 1, 2, 5] : [100, 250, 500, 1000];
+      }
+
+      if (!bike.history) bike.history = [];
+      if (!bike.serviceTemplates) bike.serviceTemplates = [];
+      if (!bike.notes) bike.notes = "";
+    });
+
+    migrated.version = 2;
+  }
+
+  migrated.version = CURRENT_DATA_VERSION;
+  return migrated;
+}
+
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return deepClone(defaultState);
+
+  if (!raw) {
+    return deepClone(defaultState);
+  }
+
   try {
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return migrateState(parsed);
   } catch {
     return deepClone(defaultState);
   }
 }
 
 function saveState() {
+  state.version = CURRENT_DATA_VERSION;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function todayString() {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function findBike(id) {
@@ -125,6 +244,7 @@ function formatValue(value, unit) {
   if (unit === "km") {
     return `${new Intl.NumberFormat("de-DE").format(value)} km`;
   }
+
   return `${new Intl.NumberFormat("de-DE", {
     minimumFractionDigits: value % 1 === 0 ? 0 : 1,
     maximumFractionDigits: 1
@@ -143,7 +263,10 @@ function getServiceState(current, template) {
 }
 
 function getOverallBikeState(bike) {
+  if (!bike.serviceTemplates.length) return "ok";
+
   const states = bike.serviceTemplates.map(t => getServiceState(bike.current, t));
+
   if (states.includes("due")) return "due";
   if (states.includes("warn")) return "warn";
   return "ok";
@@ -155,6 +278,7 @@ function stateLabel(status) {
 
 function getNearestService(bike) {
   if (!bike.serviceTemplates.length) return null;
+
   const enriched = bike.serviceTemplates.map(template => {
     const dueAt = getTemplateNextDue(template);
     return {
@@ -163,6 +287,7 @@ function getNearestService(bike) {
       remaining: dueAt - bike.current
     };
   });
+
   enriched.sort((a, b) => a.remaining - b.remaining);
   return enriched[0];
 }
@@ -175,6 +300,7 @@ function renderPriorities() {
     .map(bike => {
       const nearest = getNearestService(bike);
       if (!nearest) return null;
+
       return {
         bike,
         nearest,
@@ -208,7 +334,13 @@ function renderDashboard() {
   grid.innerHTML = "";
 
   const bikes = state.bikes.filter(b =>
-    [b.name, b.brand, String(b.year), b.type].join(" ").toLowerCase().includes(query)
+    [
+      b.name,
+      b.brand,
+      String(b.year),
+      b.type,
+      getCategoryLabel(b.category)
+    ].join(" ").toLowerCase().includes(query)
   );
 
   if (!bikes.length) {
@@ -242,6 +374,7 @@ function renderDashboard() {
       </div>
 
       <div class="next-service">
+        <strong>${getCategoryLabel(bike.category)}</strong><br>
         ${nearest
           ? `Nächster Punkt: <strong>${nearest.name}</strong><br>Fällig bei <strong>${formatValue(nearest.dueAt, bike.unit)}</strong>`
           : `Keine Intervalle definiert`}
@@ -366,7 +499,7 @@ function renderDetail() {
 
   document.getElementById("detailType").textContent = bike.type;
   document.getElementById("detailTitle").textContent = bike.name;
-  document.getElementById("detailMeta").textContent = `${bike.brand} · Baujahr ${bike.year}`;
+  document.getElementById("detailMeta").textContent = `${bike.brand} · Baujahr ${bike.year} · ${getCategoryLabel(bike.category)}`;
   document.getElementById("currentValueInput").value = bike.current;
   document.getElementById("notesInput").value = bike.notes || "";
   document.getElementById("serviceValueInput").value = bike.current;
@@ -469,14 +602,21 @@ function createBike() {
   const name = document.getElementById("newBikeName").value.trim();
   const brand = document.getElementById("newBikeBrand").value.trim();
   const year = Number(document.getElementById("newBikeYear").value);
-  const type = document.getElementById("newBikeType").value.trim();
-  const unit = document.getElementById("newBikeUnit").value;
+  const category = document.getElementById("newBikeCategory").value;
+  const manualType = document.getElementById("newBikeType").value.trim();
+  const manualUnit = document.getElementById("newBikeUnit").value;
   const current = Number(document.getElementById("newBikeCurrent").value);
 
-  if (!name || !brand || Number.isNaN(year) || !type || Number.isNaN(current)) return;
+  if (!name || !brand || Number.isNaN(year) || Number.isNaN(current)) return;
+
+  const defaults = getCategoryDefaults(category);
+
+  const type = manualType || defaults.type;
+  const unit = manualUnit || defaults.unit;
 
   const bike = {
     id: crypto.randomUUID(),
+    category,
     name,
     brand,
     year,
@@ -484,7 +624,7 @@ function createBike() {
     unit,
     current,
     notes: "",
-    quickAdds: unit === "km" ? [100, 250, 500, 1000] : [0.5, 1, 2, 5],
+    quickAdds: defaults.quickAdds,
     reference: {
       engineType: "",
       displacement: "",
@@ -493,7 +633,10 @@ function createBike() {
       filterPart: "",
       importantNotes: ""
     },
-    serviceTemplates: [],
+    serviceTemplates: defaults.serviceTemplates.map(t => ({
+      ...t,
+      lastDoneAt: current
+    })),
     history: []
   };
 
@@ -508,11 +651,27 @@ function createBike() {
   document.getElementById("newBikeYear").value = "";
   document.getElementById("newBikeType").value = "";
   document.getElementById("newBikeCurrent").value = "";
+  document.getElementById("newBikeCategory").value = "motocross";
+  document.getElementById("newBikeUnit").value = "h";
+}
+
+function deleteSelectedBike() {
+  const bike = findBike(selectedBikeId);
+  if (!bike) return;
+
+  const confirmed = window.confirm(`"${bike.name}" wirklich löschen?`);
+  if (!confirmed) return;
+
+  state.bikes = state.bikes.filter(b => b.id !== selectedBikeId);
+  selectedBikeId = null;
+  saveState();
+  renderAll();
 }
 
 function openResearchModal() {
   const bike = findBike(selectedBikeId);
   if (!bike) return;
+
   document.getElementById("researchTitle").textContent = `Research: ${bike.name} (${bike.year})`;
   document.getElementById("researchQueryInput").value = "";
   document.getElementById("researchModal").classList.remove("hidden");
@@ -546,6 +705,8 @@ function runCustomResearch() {
 }
 
 function exportJson() {
+  state.version = CURRENT_DATA_VERSION;
+
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -560,11 +721,13 @@ function importJson(file) {
   reader.onload = (event) => {
     try {
       const imported = JSON.parse(event.target.result);
+
       if (!imported.bikes || !Array.isArray(imported.bikes)) {
         alert("Ungültige Datei.");
         return;
       }
-      state = imported;
+
+      state = migrateState(imported);
       selectedBikeId = null;
       saveState();
       renderAll();
@@ -572,6 +735,7 @@ function importJson(file) {
       alert("Import fehlgeschlagen.");
     }
   };
+
   reader.readAsText(file);
 }
 
@@ -589,6 +753,8 @@ function bindEvents() {
     renderDetail();
   });
 
+  document.getElementById("deleteBikeBtn").addEventListener("click", deleteSelectedBike);
+
   document.getElementById("saveCurrentBtn").addEventListener("click", saveCurrentValue);
   document.getElementById("saveNotesBtn").addEventListener("click", saveNotes);
   document.getElementById("saveReferenceBtn").addEventListener("click", saveReference);
@@ -598,6 +764,12 @@ function bindEvents() {
   document.getElementById("addBikeBtn").addEventListener("click", openAddBikeModal);
   document.getElementById("closeAddBikeModalBtn").addEventListener("click", closeAddBikeModal);
   document.getElementById("saveNewBikeBtn").addEventListener("click", createBike);
+
+  document.getElementById("newBikeCategory").addEventListener("change", (e) => {
+    const defaults = getCategoryDefaults(e.target.value);
+    document.getElementById("newBikeType").value = defaults.type;
+    document.getElementById("newBikeUnit").value = defaults.unit;
+  });
 
   document.getElementById("researchBtn").addEventListener("click", openResearchModal);
   document.getElementById("closeResearchModalBtn").addEventListener("click", closeResearchModal);
