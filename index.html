@@ -1,35 +1,279 @@
-<section class="panel">
-  <div class="panel-title">Service eintragen</div>
-  <div class="form-grid">
-    <select id="serviceTypeSelect" class="field">
-      <option value="">Freie Wartung</option>
-    </select>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Garage Panel</title>
+  <meta name="theme-color" content="#081019" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-kicker">SERVICE MONITOR</div>
+        <h1>GARAGE PANEL</h1>
+        <div class="brand-sub">Motorrad-, Quad- und Fahrzeugwartung</div>
+      </div>
 
-    <input
-      id="serviceCustomName"
-      class="field"
-      type="text"
-      placeholder="Service Name (z. B. Reifen gewechselt)"
-    />
+      <div class="sidebar-block">
+        <div class="sidebar-label">Speicher</div>
+        <div class="sidebar-value">Lokal im Browser</div>
+      </div>
 
-    <input id="serviceDateInput" class="field" type="date" />
+      <div class="sidebar-block">
+        <div class="sidebar-label">Aktionen</div>
+        <div class="sidebar-actions">
+          <button id="addBikeBtn" class="ghost-btn">+ Fahrzeug hinzufügen</button>
+          <button id="exportBtn" class="ghost-btn">Export JSON</button>
+          <label class="ghost-btn import-btn">
+            Import JSON
+            <input id="importInput" type="file" accept=".json,application/json" hidden />
+          </label>
+        </div>
+      </div>
 
-    <input
-      id="serviceValueInput"
-      class="field"
-      type="number"
-      step="0.1"
-      placeholder="Stand"
-    />
+      <div class="sidebar-block">
+        <div class="sidebar-label">Legende</div>
+        <div class="legend">
+          <div><span class="dot ok"></span> OK</div>
+          <div><span class="dot warn"></span> BALD</div>
+          <div><span class="dot due"></span> FÄLLIG</div>
+        </div>
+      </div>
 
-    <textarea
-      id="serviceNoteInput"
-      class="field notes-small"
-      placeholder="Notiz, Öltyp, Teile, Auffälligkeiten ..."
-    ></textarea>
+      <div class="sidebar-block">
+        <div class="sidebar-label">Prioritäten</div>
+        <div id="priorityList" class="priority-list"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div>
+          <div class="eyebrow">ÜBERSICHT</div>
+          <h2>Fahrzeuge</h2>
+        </div>
+        <div class="topbar-right">
+          <input id="searchInput" class="search-input" type="text" placeholder="Fahrzeug suchen..." />
+        </div>
+      </section>
+
+      <section id="dashboardGrid" class="dashboard-grid"></section>
+
+      <section id="detailPanel" class="detail-panel hidden">
+        <div class="detail-head">
+          <div>
+            <div id="detailType" class="detail-type"></div>
+            <h3 id="detailTitle"></h3>
+            <div id="detailMeta" class="detail-meta"></div>
+          </div>
+          <div class="detail-head-actions">
+            <button id="researchBtn" class="ghost-btn">Research</button>
+            <button id="deleteBikeBtn" class="ghost-btn danger-btn">Fahrzeug löschen</button>
+            <button id="closeDetailBtn" class="ghost-btn">Schließen</button>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <section class="panel">
+            <div class="panel-title">Aktueller Stand</div>
+            <div class="current-row">
+              <input id="currentValueInput" class="current-input" type="number" step="0.1" />
+              <button id="saveCurrentBtn" class="primary-btn">Speichern</button>
+            </div>
+            <div id="quickButtons" class="quick-buttons"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Notizen</div>
+            <textarea id="notesInput" class="notes-input" placeholder="Eigene Hinweise, Setup, Auffälligkeiten ..."></textarea>
+            <div class="panel-footer">
+              <button id="saveNotesBtn" class="primary-btn">Notizen speichern</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Wartungsintervalle</div>
+            <div id="intervalList" class="interval-list"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Service eintragen</div>
+            <div class="form-grid">
+              <select id="serviceTypeSelect" class="field">
+                <option value="">Vorlage wählen</option>
+              </select>
+
+              <input id="serviceDateInput" class="field" type="date" />
+
+              <input
+                id="serviceValueInput"
+                class="field"
+                type="number"
+                step="0.1"
+                placeholder="Stand"
+              />
+
+              <textarea
+                id="serviceNoteInput"
+                class="field notes-small"
+                placeholder="Notiz, Öltyp, Teile, Auffälligkeiten ..."
+              ></textarea>
+            </div>
+            <div class="service-actions">
+              <button id="logPlannedBtn" class="primary-btn">Geplante Wartung speichern</button>
+              <button id="openCustomServiceBtn" class="ghost-btn">Eigenen Service eintragen</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-title">Referenzdaten</div>
+            <div class="form-grid">
+              <input id="refEngineType" class="field" type="text" placeholder="Motortyp, z. B. 4T / 2T" />
+              <input id="refDisplacement" class="field" type="text" placeholder="Hubraum, z. B. 250 ccm" />
+              <input id="refOilType" class="field" type="text" placeholder="Öltyp, z. B. 10W-40 JASO MA2" />
+              <input id="refOilAmount" class="field" type="text" placeholder="Ölmenge, z. B. 1,1 L" />
+              <input id="refFilterPart" class="field" type="text" placeholder="Öl-/Luftfilter Teilenummer" />
+              <textarea id="refImportantNotes" class="field notes-small" placeholder="Wichtige Hinweise, Schwachstellen, Besonderheiten ..."></textarea>
+            </div>
+            <div class="panel-footer">
+              <button id="saveReferenceBtn" class="primary-btn">Referenzdaten speichern</button>
+            </div>
+          </section>
+
+          <section class="panel panel-wide">
+            <div class="panel-title">Historie</div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
   </div>
-  <div class="service-actions">
-    <button id="logPlannedBtn" class="primary-btn">Geplante Wartung speichern</button>
-    <button id="logCustomBtn" class="ghost-btn">Freie Wartung speichern</button>
+
+  <div id="addBikeModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Neues Fahrzeug</h3>
+        <button id="closeAddBikeModalBtn" class="ghost-btn">Schließen</button>
+      </div>
+
+      <div class="form-grid">
+        <input id="newBikeName" class="field" type="text" placeholder="Name, z. B. KX250F" />
+        <input id="newBikeBrand" class="field" type="text" placeholder="Hersteller, z. B. Kawasaki" />
+        <input id="newBikeYear" class="field" type="number" placeholder="Baujahr" />
+
+        <select id="newBikeCategory" class="field">
+          <option value="motocross">Motocross</option>
+          <option value="motorcycle">Motorrad</option>
+          <option value="quad">Quad</option>
+          <option value="car">Auto</option>
+          <option value="custom">Freies Fahrzeug</option>
+        </select>
+
+        <input id="newBikeType" class="field" type="text" placeholder="Typanzeige, z. B. MOTOCROSS / HOURS" />
+
+        <select id="newBikeUnit" class="field">
+          <option value="h">Stunden (h)</option>
+          <option value="km">Kilometer (km)</option>
+        </select>
+
+        <input id="newBikeCurrent" class="field" type="number" step="0.1" placeholder="Aktueller Stand" />
+      </div>
+
+      <div id="newBikeFeedback" class="form-feedback hidden"></div>
+
+      <div class="panel-footer">
+        <button id="saveNewBikeBtn" class="primary-btn">Fahrzeug anlegen</button>
+      </div>
+    </div>
   </div>
-</section>
+
+  <div id="researchModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="researchTitle">Research</h3>
+        <button id="closeResearchModalBtn" class="ghost-btn">Schließen</button>
+      </div>
+
+      <div class="form-grid">
+        <input id="researchQueryInput" class="field" type="text" placeholder="Eigene Suche, z. B. Ölmenge oder service manual" />
+      </div>
+
+      <div class="research-grid">
+        <button class="ghost-btn research-preset" data-mode="manual">Handbuch</button>
+        <button class="ghost-btn research-preset" data-mode="oilamount">Ölmenge</button>
+        <button class="ghost-btn research-preset" data-mode="oiltype">Öltyp</button>
+        <button class="ghost-btn research-preset" data-mode="intervals">Wartungsintervalle</button>
+        <button class="ghost-btn research-preset" data-mode="parts">Teilenummern / Filter</button>
+        <button class="ghost-btn research-preset" data-mode="problems">Schwachstellen</button>
+      </div>
+
+      <div class="panel-footer">
+        <button id="runCustomResearchBtn" class="primary-btn">Freie Suche starten</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="customServiceModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Eigenen Service eintragen</h3>
+        <button id="closeCustomServiceModalBtn" class="ghost-btn">Schließen</button>
+      </div>
+
+      <div class="form-grid">
+        <input id="customServiceName" class="field" type="text" placeholder="Was wurde gemacht? z. B. Reifen gewechselt" />
+        <input id="customServiceDate" class="field" type="date" />
+        <input id="customServiceValue" class="field" type="number" step="0.1" placeholder="Stand" />
+        <textarea id="customServiceNote" class="field notes-small" placeholder="Notiz, Teile, Kosten, Auffälligkeiten ..."></textarea>
+      </div>
+
+      <div id="customServiceFeedback" class="form-feedback hidden"></div>
+
+      <div class="panel-footer">
+        <button id="saveCustomServiceBtn" class="primary-btn">Eigenen Service speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editIntervalModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Wartung bearbeiten</h3>
+        <button id="closeEditIntervalModalBtn" class="ghost-btn">Schließen</button>
+      </div>
+
+      <div class="form-grid">
+        <input id="editIntervalName" class="field" type="text" placeholder="Name" />
+        <input id="editIntervalValue" class="field" type="number" step="0.1" placeholder="Intervall" />
+        <input id="editWarnBefore" class="field" type="number" step="0.1" placeholder="Warnung vorher" />
+        <input id="editLastDoneAt" class="field" type="number" step="0.1" placeholder="Zuletzt gemacht bei" />
+      </div>
+
+      <div id="editIntervalFeedback" class="form-feedback hidden"></div>
+
+      <div class="panel-footer modal-action-row">
+        <button id="saveEditIntervalBtn" class="primary-btn">Speichern</button>
+        <button id="deleteIntervalBtn" class="ghost-btn danger-btn">Intervall löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch((error) => {
+          console.error("Service Worker konnte nicht registriert werden:", error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
