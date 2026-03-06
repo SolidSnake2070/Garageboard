@@ -1,442 +1,540 @@
-const STORAGE_KEY = "garage-panel-v2";
-
-const defaultData = {
-  bikes: [
-    {
-      id: "kx250f",
-      name: "KX250F",
-      brand: "Kawasaki",
-      year: 2009,
-      type: "MOTOCROSS / HOURS",
-      unit: "h",
-      current: 72,
-      notes: "",
-      quickAdds: [0.5, 1, 2, 5],
-      serviceTemplates: [
-        { key: "oil", name: "Ölwechsel", interval: 5, lastDoneAt: 72, warnBefore: 2 },
-        { key: "valves", name: "Ventilspiel", interval: 20, lastDoneAt: 60, warnBefore: 3 },
-        { key: "timing", name: "Steuerkette prüfen", interval: 20, lastDoneAt: 60, warnBefore: 3 },
-        { key: "piston", name: "Kolben", interval: 80, lastDoneAt: 0, warnBefore: 5 },
-        { key: "airfilter", name: "Luftfilter", interval: 1, lastDoneAt: 72, warnBefore: 0.5 }
-      ],
-      history: [
-        {
-          id: crypto.randomUUID(),
-          date: "2026-03-06",
-          kind: "planned",
-          serviceKey: "oil",
-          serviceName: "Ölwechsel",
-          value: 72,
-          note: "Motul 300V 15W60 + Filter"
-        }
-      ]
-    },
-    {
-      id: "kx85",
-      name: "KX85",
-      brand: "Kawasaki",
-      year: 2017,
-      type: "MOTOCROSS / HOURS",
-      unit: "h",
-      current: 20.4,
-      notes: "",
-      quickAdds: [0.5, 1, 2, 5],
-      serviceTemplates: [
-        { key: "gearoil", name: "Getriebeöl", interval: 5, lastDoneAt: 20.4, warnBefore: 1.5 },
-        { key: "piston", name: "Kolben", interval: 40, lastDoneAt: 0, warnBefore: 5 },
-        { key: "airfilter", name: "Luftfilter", interval: 1, lastDoneAt: 20.4, warnBefore: 0.5 }
-      ],
-      history: []
-    },
-    {
-      id: "ktm690",
-      name: "KTM 690 SMC",
-      brand: "KTM",
-      year: 2008,
-      type: "STREET / KILOMETERS",
-      unit: "km",
-      current: 46799,
-      notes: "",
-      quickAdds: [100, 250, 500, 1000],
-      serviceTemplates: [
-        { key: "oil", name: "Ölwechsel", interval: 5000, lastDoneAt: 45000, warnBefore: 1000 },
-        { key: "valves", name: "Ventilspiel", interval: 10000, lastDoneAt: 40000, warnBefore: 1000 },
-        { key: "chain", name: "Kettensatz prüfen", interval: 1000, lastDoneAt: 46000, warnBefore: 300 }
-      ],
-      history: []
-    }
-  ]
-};
-
-let state = loadState();
-let selectedBikeId = null;
-
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+:root {
+  --bg: #081019;
+  --bg-2: #0d1722;
+  --panel: #121d29;
+  --panel-2: #182636;
+  --line: #27384a;
+  --text: #ebf3fd;
+  --muted: #97aabc;
+  --accent: #59b8ff;
+  --ok: #2ecc71;
+  --warn: #f1c40f;
+  --due: #e74c3c;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  --radius: 18px;
 }
 
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return deepClone(defaultData);
+* {
+  box-sizing: border-box;
+}
 
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return deepClone(defaultData);
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(89, 184, 255, 0.08), transparent 22%),
+    radial-gradient(circle at top right, rgba(46, 204, 113, 0.06), transparent 20%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: rgba(6, 11, 18, 0.65);
+  backdrop-filter: blur(10px);
+  padding: 24px;
+}
+
+.brand h1 {
+  margin: 6px 0 8px;
+  font-size: 30px;
+  letter-spacing: 0.12em;
+}
+
+.brand-kicker {
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+}
+
+.brand-sub {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.sidebar-block {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(24, 38, 54, 0.9), rgba(18, 29, 41, 0.9));
+  box-shadow: var(--shadow);
+}
+
+.sidebar-label {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.sidebar-value {
+  font-weight: 600;
+}
+
+.sidebar-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.legend {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.priority-list {
+  display: grid;
+  gap: 10px;
+}
+
+.priority-item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  font-size: 13px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 999px;
+  margin-right: 8px;
+}
+.dot.ok { background: var(--ok); }
+.dot.warn { background: var(--warn); }
+.dot.due { background: var(--due); }
+
+.main {
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  margin-bottom: 4px;
+}
+
+.topbar h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.search-input,
+.field,
+.current-input,
+.notes-input,
+.notes-small {
+  width: 100%;
+  background: #0d1722;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.search-input {
+  min-width: 260px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(24, 38, 54, 0.95), rgba(18, 29, 41, 0.95));
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(89, 184, 255, 0.45);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+}
+
+.card-type {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  margin-bottom: 6px;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 24px;
+}
+
+.status-badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.status-ok {
+  color: var(--ok);
+  border-color: rgba(46, 204, 113, 0.35);
+  background: rgba(46, 204, 113, 0.06);
+}
+
+.status-warn {
+  color: var(--warn);
+  border-color: rgba(241, 196, 15, 0.35);
+  background: rgba(241, 196, 15, 0.06);
+}
+
+.status-due {
+  color: var(--due);
+  border-color: rgba(231, 76, 60, 0.35);
+  background: rgba(231, 76, 60, 0.06);
+}
+
+.main-metric {
+  margin-top: 16px;
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+
+.metric-value {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.metric-unit {
+  font-size: 16px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.next-service {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.next-service strong {
+  color: var(--text);
+}
+
+.detail-panel {
+  margin-top: 26px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(17, 28, 40, 0.98), rgba(12, 21, 31, 0.98));
+  box-shadow: var(--shadow);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.detail-type {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  margin-bottom: 6px;
+}
+
+.detail-head h3 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.detail-meta {
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.detail-head-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(24, 38, 54, 0.82), rgba(18, 29, 41, 0.82));
+}
+
+.panel-wide {
+  grid-column: 1 / -1;
+}
+
+.panel-title {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.current-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quick-btn,
+.primary-btn,
+.ghost-btn {
+  border-radius: 12px;
+  padding: 11px 14px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  border: none;
+  background: var(--accent);
+  color: #07111c;
+  font-weight: 700;
+}
+
+.ghost-btn,
+.quick-btn {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+
+.ghost-btn:hover,
+.quick-btn:hover {
+  border-color: rgba(89, 184, 255, 0.45);
+}
+
+.notes-input,
+.notes-small {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.notes-small {
+  min-height: 90px;
+}
+
+.panel-footer {
+  margin-top: 12px;
+}
+
+.interval-list,
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+
+.interval-row,
+.history-row {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+}
+
+.interval-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 90px;
+  gap: 12px;
+  align-items: center;
+}
+
+.interval-name {
+  font-weight: 600;
+}
+
+.interval-meta {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.interval-state {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.interval-state.ok { color: var(--ok); }
+.interval-state.warn { color: var(--warn); }
+.interval-state.due { color: var(--due); }
+
+.form-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.service-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.history-row {
+  display: grid;
+  gap: 6px;
+}
+
+.history-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.history-name {
+  font-weight: 700;
+}
+
+.history-date,
+.history-stand {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.history-note {
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 10, 0.7);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal-card {
+  width: min(720px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(17, 28, 40, 0.98), rgba(12, 21, 31, 0.98));
+  box-shadow: var(--shadow);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-head h3 {
+  margin: 0;
+}
+
+.research-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
   }
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function resetDemoData() {
-  state = deepClone(defaultData);
-  selectedBikeId = null;
-  saveState();
-  renderAll();
-}
-
-function formatValue(value, unit) {
-  if (unit === "km") {
-    return `${new Intl.NumberFormat("de-DE").format(value)} km`;
-  }
-  return `${new Intl.NumberFormat("de-DE", {
-    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
-    maximumFractionDigits: 1
-  }).format(value)} h`;
-}
-
-function getTemplateNextDue(template) {
-  return template.lastDoneAt + template.interval;
-}
-
-function getServiceState(current, template) {
-  const dueAt = getTemplateNextDue(template);
-  if (current >= dueAt) return "due";
-  if (current >= dueAt - template.warnBefore) return "warn";
-  return "ok";
-}
-
-function getOverallBikeState(bike) {
-  const states = bike.serviceTemplates.map(t => getServiceState(bike.current, t));
-  if (states.includes("due")) return "due";
-  if (states.includes("warn")) return "warn";
-  return "ok";
-}
-
-function stateLabel(status) {
-  return status === "due" ? "FÄLLIG" : status === "warn" ? "BALD" : "OK";
-}
-
-function getNearestService(bike) {
-  const enriched = bike.serviceTemplates.map(template => {
-    const dueAt = getTemplateNextDue(template);
-    return {
-      ...template,
-      dueAt,
-      remaining: dueAt - bike.current
-    };
-  });
-
-  enriched.sort((a, b) => a.remaining - b.remaining);
-  return enriched[0];
-}
-
-function findBike(id) {
-  return state.bikes.find(b => b.id === id);
-}
-
-function renderDashboard() {
-  const grid = document.getElementById("dashboardGrid");
-  const query = document.getElementById("searchInput").value.trim().toLowerCase();
-  grid.innerHTML = "";
-
-  const bikes = state.bikes.filter(b =>
-    [b.name, b.brand, String(b.year), b.type].join(" ").toLowerCase().includes(query)
-  );
-
-  if (!bikes.length) {
-    grid.innerHTML = `<div class="empty-state">Keine Fahrzeuge gefunden.</div>`;
-    return;
+@media (max-width: 760px) {
+  .topbar,
+  .detail-head,
+  .current-row {
+    grid-template-columns: 1fr;
+    display: grid;
   }
 
-  bikes.forEach(bike => {
-    const status = getOverallBikeState(bike);
-    const nearest = getNearestService(bike);
-
-    const card = document.createElement("article");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="card-head">
-        <div>
-          <div class="card-type">${bike.type}</div>
-          <h3 class="card-title">${bike.name}</h3>
-        </div>
-        <div class="status-badge status-${status}">${stateLabel(status)}</div>
-      </div>
-
-      <div class="main-metric">
-        <div class="metric-value">${bike.unit === "km"
-          ? new Intl.NumberFormat("de-DE").format(bike.current)
-          : new Intl.NumberFormat("de-DE", {
-              minimumFractionDigits: bike.current % 1 === 0 ? 0 : 1,
-              maximumFractionDigits: 1
-            }).format(bike.current)}</div>
-        <div class="metric-unit">${bike.unit}</div>
-      </div>
-
-      <div class="next-service">
-        Nächster Punkt: <strong>${nearest.name}</strong><br>
-        Fällig bei <strong>${formatValue(nearest.dueAt, bike.unit)}</strong>
-      </div>
-    `;
-
-    card.addEventListener("click", () => {
-      selectedBikeId = bike.id;
-      renderDetail();
-    });
-
-    grid.appendChild(card);
-  });
-}
-
-function renderQuickButtons(bike) {
-  const container = document.getElementById("quickButtons");
-  container.innerHTML = "";
-
-  bike.quickAdds.forEach(step => {
-    const btn = document.createElement("button");
-    btn.className = "quick-btn";
-    btn.textContent = `+${String(step).replace(".", ",")} ${bike.unit}`;
-    btn.addEventListener("click", () => {
-      const input = document.getElementById("currentValueInput");
-      input.value = Number(input.value || 0) + step;
-    });
-    container.appendChild(btn);
-  });
-}
-
-function renderIntervals(bike) {
-  const list = document.getElementById("intervalList");
-  list.innerHTML = "";
-
-  bike.serviceTemplates.forEach(template => {
-    const dueAt = getTemplateNextDue(template);
-    const serviceStatus = getServiceState(bike.current, template);
-
-    const row = document.createElement("div");
-    row.className = "interval-row";
-    row.innerHTML = `
-      <div>
-        <div class="interval-name">${template.name}</div>
-        <div class="interval-meta">Intervall: ${formatValue(template.interval, bike.unit)}</div>
-      </div>
-      <div class="interval-meta">
-        Zuletzt: ${formatValue(template.lastDoneAt, bike.unit)}<br>
-        Nächste Fälligkeit: ${formatValue(dueAt, bike.unit)}
-      </div>
-      <div class="interval-state ${serviceStatus}">${stateLabel(serviceStatus)}</div>
-    `;
-    list.appendChild(row);
-  });
-}
-
-function renderHistory(bike) {
-  const list = document.getElementById("historyList");
-  list.innerHTML = "";
-
-  if (!bike.history.length) {
-    list.innerHTML = `<div class="empty-state">Noch keine Einträge vorhanden.</div>`;
-    return;
+  .detail-grid {
+    grid-template-columns: 1fr;
   }
 
-  const sorted = [...bike.history].sort((a, b) => {
-    if (a.date === b.date) return b.value - a.value;
-    return a.date < b.date ? 1 : -1;
-  });
-
-  sorted.forEach(entry => {
-    const row = document.createElement("div");
-    row.className = "history-row";
-    row.innerHTML = `
-      <div class="history-top">
-        <div class="history-name">${entry.serviceName}</div>
-        <div class="history-date">${entry.date || "-"}</div>
-      </div>
-      <div class="history-stand">Stand: ${formatValue(entry.value, bike.unit)} · ${entry.kind === "planned" ? "geplant" : "frei"}</div>
-      <div class="history-note">${entry.note ? entry.note : "<span class='empty-state'>Keine Notiz</span>"}</div>
-    `;
-    list.appendChild(row);
-  });
-}
-
-function populateServiceSelect(bike) {
-  const select = document.getElementById("serviceTypeSelect");
-  select.innerHTML = bike.serviceTemplates
-    .map(t => `<option value="${t.key}">${t.name}</option>`)
-    .join("");
-}
-
-function renderDetail() {
-  const panel = document.getElementById("detailPanel");
-
-  if (!selectedBikeId) {
-    panel.classList.add("hidden");
-    return;
+  .interval-row {
+    grid-template-columns: 1fr;
   }
 
-  const bike = findBike(selectedBikeId);
-  if (!bike) {
-    panel.classList.add("hidden");
-    return;
+  .interval-state {
+    text-align: left;
   }
 
-  panel.classList.remove("hidden");
-
-  document.getElementById("detailType").textContent = bike.type;
-  document.getElementById("detailTitle").textContent = bike.name;
-  document.getElementById("detailMeta").textContent = `${bike.brand} · Baujahr ${bike.year}`;
-  document.getElementById("currentValueInput").value = bike.current;
-  document.getElementById("notesInput").value = bike.notes || "";
-  document.getElementById("serviceValueInput").value = bike.current;
-  document.getElementById("serviceDateInput").value = todayString();
-
-  populateServiceSelect(bike);
-  renderQuickButtons(bike);
-  renderIntervals(bike);
-  renderHistory(bike);
-}
-
-function todayString() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function saveCurrentValue() {
-  const bike = findBike(selectedBikeId);
-  if (!bike) return;
-
-  const value = Number(document.getElementById("currentValueInput").value);
-  if (Number.isNaN(value)) return;
-
-  bike.current = value;
-  saveState();
-  renderAll();
-}
-
-function saveNotes() {
-  const bike = findBike(selectedBikeId);
-  if (!bike) return;
-
-  bike.notes = document.getElementById("notesInput").value.trim();
-  saveState();
-  renderAll();
-}
-
-function logService(isPlanned) {
-  const bike = findBike(selectedBikeId);
-  if (!bike) return;
-
-  const value = Number(document.getElementById("serviceValueInput").value);
-  const date = document.getElementById("serviceDateInput").value || todayString();
-  const note = document.getElementById("serviceNoteInput").value.trim();
-  const selectedKey = document.getElementById("serviceTypeSelect").value;
-
-  if (Number.isNaN(value)) return;
-
-  let serviceName = "Freie Wartung";
-
-  if (isPlanned) {
-    const template = bike.serviceTemplates.find(t => t.key === selectedKey);
-    if (!template) return;
-    template.lastDoneAt = value;
-    serviceName = template.name;
-  } else {
-    const option = document.getElementById("serviceTypeSelect");
-    serviceName = option.options[option.selectedIndex]?.text || "Freie Wartung";
+  .search-input {
+    min-width: 0;
   }
-
-  bike.history.push({
-    id: crypto.randomUUID(),
-    date,
-    kind: isPlanned ? "planned" : "custom",
-    serviceKey: selectedKey,
-    serviceName,
-    value,
-    note
-  });
-
-  bike.current = Math.max(bike.current, value);
-
-  document.getElementById("serviceNoteInput").value = "";
-  saveState();
-  renderAll();
 }
-
-function exportJson() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `garage-panel-backup-${todayString()}.json`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-function importJson(file) {
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    try {
-      const imported = JSON.parse(event.target.result);
-      if (!imported.bikes || !Array.isArray(imported.bikes)) {
-        alert("Ungültige Datei.");
-        return;
-      }
-      state = imported;
-      saveState();
-      renderAll();
-    } catch {
-      alert("Import fehlgeschlagen.");
-    }
-  };
-  reader.readAsText(file);
-}
-
-function openResearch() {
-  const bike = findBike(selectedBikeId);
-  if (!bike) return;
-
-  const query = encodeURIComponent(`${bike.name} ${bike.year} service manual maintenance intervals common problems`);
-  window.open(`https://www.google.com/search?q=${query}`, "_blank");
-}
-
-function renderAll() {
-  renderDashboard();
-  renderDetail();
-}
-
-function bindEvents() {
-  document.getElementById("searchInput").addEventListener("input", renderDashboard);
-  document.getElementById("closeDetailBtn").addEventListener("click", () => {
-    selectedBikeId = null;
-    renderDetail();
-  });
-  document.getElementById("saveCurrentBtn").addEventListener("click", saveCurrentValue);
-  document.getElementById("saveNotesBtn").addEventListener("click", saveNotes);
-  document.getElementById("logPlannedBtn").addEventListener("click", () => logService(true));
-  document.getElementById("logCustomBtn").addEventListener("click", () => logService(false));
-  document.getElementById("researchBtn").addEventListener("click", openResearch);
-  document.getElementById("exportBtn").addEventListener("click", exportJson);
-  document.getElementById("resetBtn").addEventListener("click", resetDemoData);
-
-  document.getElementById("importInput").addEventListener("change", (e) => {
-    const file = e.target.files?.[0];
-    if (file) importJson(file);
-    e.target.value = "";
-  });
-}
-
-bindEvents();
-renderAll();
