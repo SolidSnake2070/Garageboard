@@ -595,3 +595,13 @@ button, input, select, textarea {
   color: var(--muted);
   margin-top: 6px;
 }
+.nav-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.full-width {
+  width: 100%;
+}
