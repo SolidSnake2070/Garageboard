@@ -596,8 +596,8 @@ button, input, select, textarea {
   margin-top: 6px;
 }
 .nav-link {
-    color: var(--text);
   text-decoration: none;
+  color: var(--text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
