@@ -597,14 +597,16 @@ button, input, select, textarea {
 }
 .sidebar-link {
   text-decoration: none;
+  color: #ffffff;
   display: block;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.1s ease;
 }
 
 .sidebar-link:hover {
-  opacity: 0.8;
-  transform: translateX(2px); /* leichter Bewegungseffekt */
+  opacity: 0.9;
+  transform: translateX(2px);
+  text-shadow: 0 0 8px rgba(77, 163, 255, 0.3);
 }
 
 .full-width {
